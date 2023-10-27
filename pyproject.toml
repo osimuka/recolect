@@ -1,3 +1,23 @@
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[metadata]
+name = recolect
+version = 0.0.1
+authors = ["Uka Osim"]
+readme = file: README.md
+description = "A toolbox for smart suggestions-making tools, making it easier to create your own recommendation systems."
+repository = 
+classifiers = 
+    Programming Language :: Python :: 3
+    License :: OSI Approved :: MIT License
+    Operating System :: OS Independent
+]
+License = MIT
+License File = LICENSE
+
+[options]
+packages = find:
+python_requires = >=3.6
+install_requires = []

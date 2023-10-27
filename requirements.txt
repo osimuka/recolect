@@ -1,0 +1,4 @@
+pandas==2.1.2
+nltk==3.8.1
+sklearn==0.0.post10
+gensim==4.3.2
