@@ -2,7 +2,7 @@
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[metadata]
+[project]
 name = recolect
 version = 0.0.1
 authors = [
