@@ -1,7 +1,5 @@
-
 import re
 import typing
-import argparse
 import pandas as pd
 import numpy as np
 from sklearn.cluster import KMeans
@@ -9,6 +7,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 from nltk.stem import PorterStemmer
 from gensim.models.fasttext import FastText as FT_gensim
+
+
+__all__ = ['get_recommendations', 'load_and_preprocess_data', 'train']
 
 
 def preprocess_text(text: str) -> str:
@@ -72,15 +73,3 @@ def get_recommendations(title: str, model: typing.Any, data: pd.DataFrame, n: in
         "cosine_similarity": _get_cosine_similarity
     }
     return METHODS[method](title, model, data, n)
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Get recommendations for a title')
-    parser.add_argument('title', type=str, help='Title of the item')
-    parser.add_argument('--filepath', type=str, help='Path to the data file')
-    parser.add_argument('--col', type=str, help='Column name of the data file')
-    parser.add_argument('--n', type=int, help='Number of recommendations to return')
-    parser.add_argument('--method', type=str, help='Method to use for recommendations')
-    args = parser.parse_args()
-    model, data = train(load_and_preprocess_data(args.filepath, args.col))
-    print(get_recommendations(args.title, model, data, args.n, args.method))
