@@ -9,7 +9,12 @@ from nltk.stem import PorterStemmer
 from gensim.models.fasttext import FastText as FT_gensim
 
 
-__all__ = ['get_recommendations', 'load_and_preprocess_data', 'train']
+__all__ = ['get_recommendations', 'load_and_preprocess_data', 'train', 'load_data']
+
+
+def load_data(filepath: str) -> pd.DataFrame:
+    """Load data from a csv file"""
+    return pd.read_csv(filepath)
 
 
 def preprocess_text(text: str) -> str:

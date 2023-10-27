@@ -1,6 +1,6 @@
 import argparse
 import pickle
-from recolect.core import get_recommendations, load_and_preprocess_data, train
+from recolect.core import get_recommendations, load_and_preprocess_data, load_data, train
 
 
 def save_model(model, filepath):
@@ -14,16 +14,17 @@ def load_model(filepath):
 
 
 def training_cmd(args):
-    # Training logic
+    """Train the recommendation model"""
     model, _ = train(load_and_preprocess_data(args.filepath, args.col))
     save_model(model, args.modelpath)
     print(f"Training complete. Model saved to {args.modelpath}")
 
 
 def recommend_cmd(args):
-    # Recommendation logic
+    """Get recommendations for a title"""
     model = load_model(args.modelpath)
-    result = get_recommendations(args.title, model, None, args.n, args.method)
+    data = load_data(args.filepath)
+    result = get_recommendations(args.title, model, data, args.n, args.method)
     print(result)
 
 
@@ -42,6 +43,7 @@ if __name__ == '__main__':
     recommend_parser = subparsers.add_parser('recommend', help='Get recommendations for a title')
     recommend_parser.add_argument('title', type=str, help='Title of the item')
     recommend_parser.add_argument('--modelpath', type=str, required=True, help='Path to the trained model')
+    recommend_parser.add_argument('--filepath', type=str, required=True, help='Path to the data file')
     recommend_parser.add_argument('--n', type=int, default=10, help='Number of recommendations to return')
     recommend_parser.add_argument('--method', type=str, default="default_method", help='Method to use for recommendations')
     recommend_parser.set_defaults(func=recommend_cmd)
