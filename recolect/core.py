@@ -5,6 +5,8 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 from nltk.stem import PorterStemmer
 from gensim.models.fasttext import FastText as FT_gensim
 
@@ -43,9 +45,9 @@ def k_means_clustering(model: typing.Any, data: pd.DataFrame) -> pd.DataFrame:
 def train(data: pd.DataFrame, col: str = None) -> pd.DataFrame:
     data['processed_text'] = data[col or 'description'].apply(lambda x: preprocess_text(x))
     train, test = train_test_split(data, test_size=0.2, random_state=42)
-    model = FT_gensim(size=100, window=5, min_count=5)
-    model.build_vocab(sentences=train['processed_text'])
-    model.train(sentences=train['processed_text'], total_examples=len(train['processed_text']), epochs=10)
+    model = FT_gensim(vector_size=100, window=5, min_count=5)
+    model.build_vocab(train['processed_text'])
+    model.train(train['processed_text'], total_examples=len(train['processed_text']), epochs=10)
     return model, test
 
 
@@ -66,7 +68,10 @@ def _get_cosine_similarity(title: str, model: typing.Any, data: pd.DataFrame, n:
 
     title_row = data[data["title"] == title].copy()
     result_df = data.copy()
-    result_df['similarity'] = result_df.apply(lambda x: model.wv.n_similarity(title_row["processed_text"], x["processed_text"]), axis=1)
+    cv = CountVectorizer()
+    converted_metrix = cv.fit_transform(result_df["processed_text"])
+    cosine_sim = cosine_similarity(converted_metrix)
+    result_df["similarity"] = cosine_sim[result_df.index, title_row.index]
     result_df.sort_values(by=["similarity"], ascending=False, inplace=True)
     return result_df[['title', 'similarity']].head(n)
 
