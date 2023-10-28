@@ -9,7 +9,7 @@ from nltk.stem import PorterStemmer
 from gensim.models.fasttext import FastText as FT_gensim
 
 
-__all__ = ['get_recommendations', 'load_and_preprocess_data', 'train', 'load_data']
+__all__ = ['get_recommendations', 'load_and_preprocess_data', 'train']
 
 
 def load_data(filepath: str) -> pd.DataFrame:
@@ -26,7 +26,7 @@ def preprocess_text(text: str) -> str:
 
 
 def load_and_preprocess_data(filepath: str, col: str = None) -> pd.DataFrame:
-    data = pd.read_csv(filepath)
+    data = load_data(filepath)
     data['processed_text'] = data[col or 'description'].apply(lambda x: preprocess_text(x))
     return data
 
@@ -58,7 +58,7 @@ def _get_recommendations_k_means_clustering(title: str, model: typing.Any, data:
     result_df = result_df.drop(result_df[result_df["title"] == title].index)
     result_df["similarity"] = result_df.apply(lambda x: model.wv.n_similarity(title_row["processed_text"], x["processed_text"]), axis=1)
     result_df.sort_values(by=["similarity"], ascending=False, inplace=True)
-    return result_df['title', "similarity"].head(n)
+    return result_df[['title', 'similarity']].head(n)
 
 
 def _get_cosine_similarity(title: str, model: typing.Any, data: pd.DataFrame, n: int = 10) -> pd.DataFrame:
@@ -66,9 +66,9 @@ def _get_cosine_similarity(title: str, model: typing.Any, data: pd.DataFrame, n:
 
     title_row = data[data["title"] == title].copy()
     result_df = data.copy()
-    result_df["similarity"] = result_df.apply(lambda x: model.wv.n_similarity(title_row["processed_text"], x["processed_text"]), axis=1)
+    result_df['similarity'] = result_df.apply(lambda x: model.wv.n_similarity(title_row["processed_text"], x["processed_text"]), axis=1)
     result_df.sort_values(by=["similarity"], ascending=False, inplace=True)
-    return result_df['title', "similarity"].head(n)
+    return result_df[['title', 'similarity']].head(n)
 
 
 def get_recommendations(title: str, model: typing.Any, data: pd.DataFrame, n: int = 10, method: str = "k_means_clustering") -> pd.DataFrame:

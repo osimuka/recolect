@@ -1,6 +1,6 @@
 import argparse
 import pickle
-from recolect.core import get_recommendations, load_and_preprocess_data, load_data, train
+from recolect.core import load_and_preprocess_data, get_recommendations, train
 
 
 def save_model(model, filepath):
@@ -23,7 +23,7 @@ def training_cmd(args):
 def recommend_cmd(args):
     """Get recommendations for a title"""
     model = load_model(args.modelpath)
-    data = load_data(args.filepath)
+    data = load_and_preprocess_data(args.filepath)
     result = get_recommendations(args.title, model, data, args.n, args.method)
     print(result)
 
