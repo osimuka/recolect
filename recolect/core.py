@@ -73,7 +73,8 @@ def _get_cosine_similarity(title: str, model: typing.Any, data: pd.DataFrame, n:
     cosine_sim = cosine_similarity(converted_metrix)
     result_df["similarity"] = cosine_sim[result_df.index, title_row.index]
     result_df.sort_values(by=["similarity"], ascending=False, inplace=True)
-    return result_df[['title', 'similarity']].head(n)
+    # ignore the first score because it will give us a 100% score because it's the same title
+    return result_df[['title', 'similarity']].head(n)[1:]
 
 
 def get_recommendations(title: str, model: typing.Any, data: pd.DataFrame, n: int = 10, method: str = "k_means_clustering") -> pd.DataFrame:
