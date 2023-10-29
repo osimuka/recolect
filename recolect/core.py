@@ -67,13 +67,19 @@ def _get_cosine_similarity(title: str, model: typing.Any, data: pd.DataFrame, n:
     """Get recommendations for a title"""
 
     title_row = data[data["title"] == title].copy()
+
+    # Check if title_row is empty (title not found)
+    if title_row.empty:
+        return pd.DataFrame(columns=['title', 'similarity'], data=[])
+
     result_df = data.copy()
     cv = CountVectorizer()
+
     converted_metrix = cv.fit_transform(result_df["processed_text"])
     cosine_sim = cosine_similarity(converted_metrix)
     result_df["similarity"] = cosine_sim[result_df.index, title_row.index]
     result_df.sort_values(by=["similarity"], ascending=False, inplace=True)
-    # ignore the first score because it will give us a 100% score because it's the same title
+    # ignore the first score because it will give us a 100% score because it's the same
     return result_df[['title', 'similarity']].head(n)[1:]
 
 
