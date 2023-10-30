@@ -120,8 +120,8 @@ def _get_recommendations_k_means_clustering(title: str, model: typing.Any, data:
     result_df = result_df.drop(result_df[result_df["title"] == title].index)
 
     # Calculate word2vec similarities between the given title's processed_text and the processed_text of each row in result_df
-    title_vector = get_avg_vector(title_row["processed_text"].iloc[0], model).reshape(1, -1)
-    result_df["similarity"] = result_df["processed_text"].apply(lambda x: cosine_similarity(title_vector, get_avg_vector(x, model).reshape(1, -1)).item())
+
+    result_df["similarity"] = result_df["processed_text"].apply(lambda x: model.wv.n_similarity(title_row["processed_text"].iloc[0], x))  
 
     # Sort the DataFrame based on similarity values in descending order
     result_df.sort_values(by=["similarity"], ascending=False, inplace=True)
