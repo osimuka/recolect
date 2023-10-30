@@ -65,7 +65,7 @@ def train(data: pd.DataFrame, col: str = None) -> pd.DataFrame:
     return model, test
 
 
-def get_avg_vector(words, model):
+def get_avg_vector(words, model) -> np.ndarray:
     """Get average vector for a list of words"""
     # Get the vectors for each word in the list
     vectors = [model.wv[word] for word in words if word in model.wv.index_to_key]
@@ -138,15 +138,28 @@ def _get_cosine_similarity(title: str, model: typing.Any, data: pd.DataFrame, n:
     if title_row.empty:
         return pd.DataFrame(columns=RESPONSE_COLUMNS, data=[])
 
-    result_df = data.copy()
-    cv = CountVectorizer()
+    # Calculate average feature vectors for the words in each row of the DataFrame
+    data['avg_vector'] = data["processed_text"].apply(lambda x: get_avg_vector(x, model))
 
-    converted_metrix = cv.fit_transform(result_df["processed_text"])
-    cosine_sim = cosine_similarity(converted_metrix)
-    result_df["similarity"] = cosine_sim[result_df.index, title_row.index]
-    result_df.sort_values(by=["similarity"], ascending=False, inplace=True)
-    # ignore the first score because it will give us a 100% score because it's the same
-    return result_df[RESPONSE_COLUMNS].head(n)[1:]
+    # Create a matrix of the average vectors
+    avg_vectors_matrix = np.vstack(data['avg_vector'].to_numpy())
+
+    # Find the vector for the given title
+    title_vector = data[data['title'] == title]['avg_vector'].iloc[0].reshape(1, -1)
+
+    # Compute the cosine similarity between the title vector and all other vectors
+    cosine_sim = cosine_similarity(title_vector, avg_vectors_matrix)
+
+    # Add the similarity scores to the dataframe
+    data['similarity'] = cosine_sim[0]
+
+    # Sort by similarity
+    result_df = data.sort_values(by="similarity", ascending=False)
+
+    # Exclude the movie itself and get the top n
+    result_df = result_df[result_df["title"] != title]
+
+    return result_df[RESPONSE_COLUMNS].head(n)
 
 
 def get_recommendations(title: str, model: typing.Any, data: pd.DataFrame, n: int = 10, method: str = "k_means_clustering") -> pd.DataFrame:
