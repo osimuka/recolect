@@ -68,7 +68,7 @@ def train(data: pd.DataFrame, col: str = None) -> pd.DataFrame:
 def get_avg_vector(words, model):
     """Get average vector for a list of words"""
     # Get the vectors for each word in the list
-    vectors = [model.wv[word] for word in words if word in model.wv]
+    vectors = [model.wv[word] for word in words if word in model.wv.index_to_key]
 
     # If no words are in the model, return a vector of zeros
     if not vectors:
@@ -88,7 +88,7 @@ def k_means_clustering(model: typing.Any, data: pd.DataFrame, column_name: str) 
     avg_vectors_matrix = np.vstack(data['avg_vector'].to_numpy())
 
     # Fit the KMeans clustering
-    kmeans = KMeans(n_clusters=20, random_state=42, n_init="auto").fit(avg_vectors_matrix)
+    kmeans = KMeans(n_clusters=8, random_state=42, n_init="auto").fit(avg_vectors_matrix)
 
     # Predict clusters for those average vectors
     data['cluster_id'] = kmeans.predict(avg_vectors_matrix)
