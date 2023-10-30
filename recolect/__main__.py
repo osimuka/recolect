@@ -3,29 +3,30 @@ import pickle
 from recolect.core import load_and_preprocess_data, get_recommendations, train
 
 
-def save_model(model, filepath):
-    with open(filepath, 'wb') as file:
-        pickle.dump(model, file)
+def save_model(model, filepath) -> None:
+    with open(filepath, 'wb') as fl:
+        pickle.dump(model, fl)
 
 
-def load_model(filepath):
-    with open(filepath, 'rb') as file:
-        return pickle.load(file)
+def load_model(filepath) -> "Model":
+    with open(filepath, 'rb') as fl:
+        return pickle.load(fl)
 
 
-def training_cmd(args):
+def training_cmd(args) -> None:
     """Train the recommendation model"""
     model, _ = train(load_and_preprocess_data(args.filepath, args.col))
     save_model(model, args.modelpath)
     print(f"Training complete. Model saved to {args.modelpath}")
 
 
-def recommend_cmd(args):
+def recommend_cmd(args) -> "DataFrame":
     """Get recommendations for a title"""
     model = load_model(args.modelpath)
     data = load_and_preprocess_data(args.filepath)
     result = get_recommendations(args.title, model, data, args.n, args.method)
     print(result)
+    return result
 
 
 if __name__ == '__main__':

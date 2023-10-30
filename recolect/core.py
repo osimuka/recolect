@@ -2,6 +2,7 @@ import re
 import typing
 import pandas as pd
 import numpy as np
+import nltk
 from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
@@ -10,6 +11,10 @@ from sklearn.metrics.pairwise import cosine_similarity
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
 from gensim.models.fasttext import FastText as FT_gensim
+
+nltk.download('punkt')  # Download data for tokenizer
+nltk.download('stopwords')  # Download stopwords list
+nltk.download('wordnet')  # Download data for lemmatizer
 
 
 __all__ = ['get_recommendations', 'load_and_preprocess_data', 'train']
@@ -23,6 +28,9 @@ def load_data(filepath: str) -> pd.DataFrame:
 # Precompiled patterns
 NON_WORD_PATTERN = re.compile(r'\W')
 SINGLE_CHAR_PATTERN = re.compile(r'\s+[a-z]\s+')
+
+# response columns
+RESPONSE_COLUMNS = ['title', 'listed_in', 'similarity']
 
 
 def preprocess_text(text: str) -> str:
@@ -95,7 +103,7 @@ def _get_recommendations_k_means_clustering(title: str, model: typing.Any, data:
 
     # Check if title_row is empty (title not found)
     if title_row.empty:
-        return pd.DataFrame(columns=['title', 'similarity'], data=[])
+        return pd.DataFrame(columns=RESPONSE_COLUMNS, data=[])
 
     # Assign clusters to each row in the data
     data = k_means_clustering(model, data, "processed_text")
@@ -118,7 +126,7 @@ def _get_recommendations_k_means_clustering(title: str, model: typing.Any, data:
     # Sort the DataFrame based on similarity values in descending order
     result_df.sort_values(by=["similarity"], ascending=False, inplace=True)
 
-    return result_df[['title', 'type', 'similarity']].head(n)
+    return result_df[RESPONSE_COLUMNS].head(n)
 
 
 def _get_cosine_similarity(title: str, model: typing.Any, data: pd.DataFrame, n: int = 10) -> pd.DataFrame:
@@ -128,7 +136,7 @@ def _get_cosine_similarity(title: str, model: typing.Any, data: pd.DataFrame, n:
 
     # Check if title_row is empty (title not found)
     if title_row.empty:
-        return pd.DataFrame(columns=['title', 'similarity'], data=[])
+        return pd.DataFrame(columns=RESPONSE_COLUMNS, data=[])
 
     result_df = data.copy()
     cv = CountVectorizer()
@@ -138,7 +146,7 @@ def _get_cosine_similarity(title: str, model: typing.Any, data: pd.DataFrame, n:
     result_df["similarity"] = cosine_sim[result_df.index, title_row.index]
     result_df.sort_values(by=["similarity"], ascending=False, inplace=True)
     # ignore the first score because it will give us a 100% score because it's the same
-    return result_df[['title', 'similarity']].head(n)[1:]
+    return result_df[RESPONSE_COLUMNS].head(n)[1:]
 
 
 def get_recommendations(title: str, model: typing.Any, data: pd.DataFrame, n: int = 10, method: str = "k_means_clustering") -> pd.DataFrame:
