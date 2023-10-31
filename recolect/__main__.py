@@ -23,7 +23,7 @@ def training_cmd(args) -> None:
 def recommend_cmd(args) -> "DataFrame":
     """Get recommendations for a title"""
     model = load_model(args.modelpath)
-    data = load_and_preprocess_data(args.filepath)
+    data = load_and_preprocess_data(args.filepath, args.col)
     result = get_recommendations(args.title, model, data, args.n, args.method)
     print(result)
     return result
@@ -45,6 +45,7 @@ if __name__ == '__main__':
     recommend_parser.add_argument('title', type=str, help='Title of the item')
     recommend_parser.add_argument('--modelpath', type=str, required=True, help='Path to the trained model')
     recommend_parser.add_argument('--filepath', type=str, required=True, help='Path to the data file')
+    recommend_parser.add_argument('--col', type=str, required=False, help='Column name of the data file')
     recommend_parser.add_argument('--n', type=int, default=10, help='Number of recommendations to return')
     recommend_parser.add_argument('--method', type=str, default="default_method", help='Method to use for recommendations')
     recommend_parser.set_defaults(func=recommend_cmd)

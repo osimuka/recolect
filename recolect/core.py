@@ -26,17 +26,16 @@ def load_data(filepath: str) -> pd.DataFrame:
 
 
 # Precompiled patterns
-NON_WORD_PATTERN = re.compile(r'\W')
-SINGLE_CHAR_PATTERN = re.compile(r'\s+[a-z]\s+')
+NON_WORD_PATTERN = re.compile(r'\W') # Matches any non-word character
+SINGLE_CHAR_PATTERN = re.compile(r'\s+[a-z]\s+') # Matches all single characters
 
 # response columns
-RESPONSE_COLUMNS = ['title', 'listed_in', 'similarity']
+RESPONSE_COLUMNS = ['title', 'similarity']
 
 
 def preprocess_text(text: str) -> str:
     # Convert to lowercase
-    text = text.lower()
-
+    text = str(text).lower()
     # Remove all non-word characters & all single characters
     text = NON_WORD_PATTERN.sub(' ', SINGLE_CHAR_PATTERN.sub(' ', text))
 
