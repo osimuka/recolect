@@ -15,7 +15,7 @@ def load_model(filepath) -> "Model":
 
 def training_cmd(args) -> None:
     """Train the recommendation model"""
-    model, _ = train(load_and_preprocess_data(args.filepath, args.col))
+    model, _ = train(load_and_preprocess_data(args.filepath, args.col), col=args.col)
     save_model(model, args.modelpath)
     print(f"Training complete. Model saved to {args.modelpath}")
 
