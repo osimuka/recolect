@@ -12,6 +12,8 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
 from gensim.models.fasttext import FastText as FT_gensim
 
+from sentence_transformers import SentenceTransformer
+
 nltk.download('punkt')  # Download data for tokenizer
 nltk.download('stopwords')  # Download stopwords list
 nltk.download('wordnet')  # Download data for lemmatizer
@@ -161,10 +163,52 @@ def _get_cosine_similarity(title: str, model: typing.Any, data: pd.DataFrame, n:
     return result_df[RESPONSE_COLUMNS].head(n)
 
 
+def _get_cosine_similarity_using_transformers(title: str,
+                                              model: typing.Any,
+                                              data: pd.DataFrame,
+                                              n: int = 10) -> pd.DataFrame:
+    """Get recommendations for a title using sentence_transformers embeddings."""
+
+    # Load the sentence transformer model
+    transformer_model = SentenceTransformer('all-MiniLM-L6-v2')
+
+    # Check if title exists in data
+    title_row = data[data["title"] == title].copy()
+
+    # Check if title_row is empty (title not found)
+    if title_row.empty:
+        return pd.DataFrame(columns=RESPONSE_COLUMNS, data=[])
+
+    # Obtain embeddings for each processed_text
+    data['embeddings'] = data["processed_text"].apply(lambda x: transformer_model.encode(x))
+
+    # Create a matrix of the embeddings
+    embeddings_matrix = np.vstack(data['embeddings'].to_numpy())
+
+    # Find the embedding for the given title
+    title_embedding = transformer_model.encode(title_row['processed_text'].iloc[0]).reshape(1, -1)
+
+    # Compute the cosine similarity between the title embedding and all other embeddings
+    cosine_sim = cosine_similarity(title_embedding, embeddings_matrix)
+
+    # Add the similarity scores to the dataframe
+    data['similarity'] = cosine_sim[0]
+
+    # Sort by similarity
+    result_df = data.sort_values(by="similarity", ascending=False)
+
+    # Exclude the title itself and get the top n
+    result_df = result_df[result_df["title"] != title]
+
+    # Here I'm assuming that you have already defined RESPONSE_COLUMNS elsewhere in your code
+    return result_df[RESPONSE_COLUMNS].head(n)
+
+
 def get_recommendations(title: str, model: typing.Any, data: pd.DataFrame, n: int = 10, method: str = "k_means_clustering") -> pd.DataFrame:
     """Get recommendations for a title"""
     METHODS = {
         "k_means_clustering": _get_recommendations_k_means_clustering,
-        "cosine_similarity": _get_cosine_similarity
+        "cosine_similarity": _get_cosine_similarity,
+        "cosine_similarity_using_transformers": _get_cosine_similarity_using_transformers
     }
     return METHODS[method](title, model, data, n)
