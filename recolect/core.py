@@ -6,7 +6,6 @@ import nltk
 from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
-from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
